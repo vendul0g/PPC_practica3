@@ -1,0 +1,39 @@
+
+X<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ControlMessage>
+  <Command>DISABLE</Command>
+  <serverID>2002</serverID>
+</ControlMessage>
+
+---------------------------------------------------------
+X<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ControlMessage>
+  <Command>DISABLE</Command>
+  <serverID>2003</serverID>
+</ControlMessage>
+
+---------------------------------------------------------
+X<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ControlMessage>
+  <Command>SET_TIME_REFRESH</Command>
+  <serverID>2001</serverID>
+  <TimeRefresh>5</TimeRefresh>
+</ControlMessage>
+
+---------------------------------------------------------
+X<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ControlMessage>
+  <Command>SET_TIME_REFRESH</Command>
+  <serverID>2001</serverID>
+  <TimeRefresh>2</TimeRefresh>
+</ControlMessage>
+
+---------------------------------------------------------
+J{"mode":3,"command":"CHANGE_UNIT","idServer":2001}
+---------------------------------------------------------
+J{"command":"ENABLE","idServer":2003}
+---------------------------------------------------------
+J{"mode":1,"command":"BROADCAST_MODE","idServer":2003}
+---------------------------------------------------------
+J{"command":"ENABLE","idServer":2002}
+---------------------------------------------------------

@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="ControlMessage" type="ControlMessage"/>
+
+   <xs:complexType name="ControlMessage">
+      <xs:sequence>
+         <xs:element name="Command" type="xs:string"/>
+         <xs:element name="serverID" type="xs:string"/>
+         <xs:element name="mode" type="xs:string"/>
+      </xs:sequence>
+   </xs:complexType>
+
+</xs:schema>

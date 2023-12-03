@@ -1,0 +1,21 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="BroadcastMessage" type="BroadcastMessageType"/>
+
+   <xs:complexType name="BroadcastMessageType">
+      <xs:sequence>
+         <xs:element name="ID" type="xs:string"/>
+         <xs:element name="PresionAtmosferica" type="Param"/>
+         <xs:element name="Temperatura" type="Param"/>
+         <xs:element name="Humedad" type="Param"/>
+      </xs:sequence>
+   </xs:complexType>
+   
+   <xs:complexType name="Param">
+   	<xs:sequence>
+   	 	<xs:element name="Valor" type="xs:string"/>
+      	<xs:element name="Medida" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>
