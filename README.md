@@ -1,4 +1,2 @@
-# Práctica 2 PPC
-Consiste en montar una serie de servidores que tienen instalados unos sensores. Estos sensores estarán mandando contínuamente mensajes broadcast a la red.
-
-Por otro lado tenemos clientes, que reciben los mensajes broadcast, y además implementan una funcionalidad para controlar de manera remota a los servidores; como para cambiar sus parámetros y eso.
+# Práctica 3 PPC
+Consiste en una mezcla de ambas prácticas anteriores, pero añadiendo el uso de una API para el control de los servidores (de la práctica 2), y también añadiendo la notificación por correo electrónico
