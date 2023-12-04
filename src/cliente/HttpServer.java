@@ -27,6 +27,10 @@ public class HttpServer extends Thread{
 	
 	//Funcionalidad
 	public void run() {
+		if(s == null) {
+			System.err.println("No se pueden tener 2 clientes con el servicio de control HTTP abierto");
+			return;
+		}
 		System.out.println("Abrimos el servidor HTTP");
 		while(true) {
 			try {

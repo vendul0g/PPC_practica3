@@ -44,7 +44,7 @@ public class ControlThreadClient extends Thread{
 			inst = scanner.nextLine();
 			
 			//Procesamos lo que quiere el usuario
-			ControlMessage c = ControlMessageType.getType(inst);
+			ControlMessage c = ControlMessageType.getTypeCommandLine(inst);
 			
 			//Comprobamos si el comando es inválido
 			if(c.getCommand() == ControlMessageType.INVALID) {
@@ -80,6 +80,12 @@ public class ControlThreadClient extends Thread{
 			//Si se quiere ver la estadística
 			if(c.getCommand() == ControlMessageType.GET_STATISTICS) {
 				System.out.println(this.creator.getStatistic());
+				continue;
+			}
+			
+			//Si se quiere mostrar el último envío
+			if(c.getCommand() == ControlMessageType.SHOW_LAST_ENTRY) {
+				System.out.println("| Última entrada\n·--> "+creator.getLastEntry());
 				continue;
 			}
 				
@@ -138,6 +144,10 @@ public class ControlThreadClient extends Thread{
 	}
 	
 	public void sendControlMessage(ControlMessage c) {
+		if(c.getCommand() == ControlMessageType.CONTROL_MODE) {
+			this.serializationMode = ((SetModeMessage) c).getMode();
+			return;
+		}
 		byte[] buf = c.serialize(getSerializationMode());
 		//Mandamos el paquete
 		sendMessage(c.getIdServer(), buf);
@@ -167,6 +177,7 @@ public class ControlThreadClient extends Thread{
 				+ " statistic : Muestra las estadísticas de valores ofrecidas por los servidores\n"
 				+ " verbose : Muestra los mensajes que van enviando los servidores\n"
 				+ " notverbose : Deja de mostrar los mensajes que van enviando los servidores\n"
+				+ " showlastentry: Muestra la última entrada recibida por los servidores\n"
 				+ " help : Muestra este mensaje");
 		printServersRunning();
 	}

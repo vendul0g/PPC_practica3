@@ -1,7 +1,9 @@
 package cliente;
 
 public class IndexHTML {
-	// TODO ver como traducir peticiones
+	//Atributos
+	private String lastEntry;
+	
 	//Constructor
 	public IndexHTML() {
 		
@@ -9,7 +11,7 @@ public class IndexHTML {
 	
 	//Funcionalidad
 	public String getHTML() {
-		return "<!DOCTYPE html>\n"
+		String s= "<!DOCTYPE html>\n"
 				+ "<html lang=\"es\">\n"
 				+ "<head>\n"
 				+ "  <meta charset=\"UTF-8\">\n"
@@ -19,10 +21,31 @@ public class IndexHTML {
 				+ "  <h1>Control Servidores online</h1>\n"
 				+ "  <div>\n"
 				+ "    <p>Funcionalidad de control de servidores</p>\n"
-				+ "    <a href=\"http://localhost:8080/execute?command=disableServer1\">Deshabilitar Servidor 1</a><br>"
-				+ "    "
-				+ "  </div>\n"
-				+ "</body>\n"
-				+ "</html>\n";
+				+ "    <a href=\"http://serverppc.com:8080/2001?disable\">Deshabilitar Servidor 1</a><br>\n"
+				+ "    <a href=\"http://serverppc.com:8080/2001?enable\">Habilitar Servidor 1</a><br>\n"
+				+ "<br>\n"
+				+ "    <a href=\"http://serverppc.com:8080/2002?setrefresh=1\">Tiempo de refresco Servidor 2: 1 segundo</a><br>\n"
+				+ "    <a href=\"http://serverppc.com:8080/2002?setrefresh=5\">Tiempo de refresco Servidor 2: 5 segundos</a><br>\n"
+				+ "<br>\n"
+				+ "    <a href=\"http://serverppc.com:8080/2003?broadcastmode=json\">Modo de envío broadcast Servidor 3: JSON</a><br>\n"
+				+ "    <a href=\"http://serverppc.com:8080/2003?broadcastmode=xml\">Modo de envío broadcast Servidor 3: XML</a><br>\n"
+				+ "<br>\n"
+				+ "    <a href=\"http://serverppc.com:8080/0?controlmode=json\">Modo de envío mensajes de control: JSON</a><br>\n"
+				+ "    <a href=\"http://serverppc.com:8080/0?controlmode=xml\">Modo de envío mensajes de control: XML</a><br>\n"
+				+ "<br>\n"
+				+ "    <a href=\"http://serverppc.com:8080/0?showlastentry\">Mostar el últiimo parámetro obtenido</a></br>\n"
+				+ "  </div>\n\n";
+		if (lastEntry != null) {
+			s +=  "  <p>"+lastEntry+"</p>\n";
+			lastEntry = null;
+		}
+				s+= "</body>\n"
+				 +  "</html>  \n\n"
+				 + "\n\n  ";
+		return s;
+	}
+	
+	public void addEntry(String s) {
+		this.lastEntry = s;
 	}
 }

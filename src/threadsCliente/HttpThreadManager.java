@@ -14,12 +14,14 @@ import cliente.Cliente;
 import cliente.HttpMethod;
 import cliente.IndexHTML;
 import httpMessages.*;
+import messages.ControlMessage;
+import messages.ControlMessageType;
 
 
 public class HttpThreadManager extends Thread{
 	//Variables globales
 	private static boolean VERBOSE = false;
-	private static final int BUFSIZE = 1024;
+	private static final int BUFSIZE = 2048;
 	public static final int TIMEOUT = 1000*10;
 		
 	//Atributos
@@ -70,9 +72,12 @@ public class HttpThreadManager extends Thread{
 	}
 	
 	private String proccesMessage(String m) {
+		boolean showLastEntry = false;
+		
 		//Comprobamos el formato de la petición
 		if(!checkFormat(m)) {
 			if(VERBOSE) System.out.println("\t\tBad Request");
+			isOpen = false;
 			return new HTTPResponse400().getMessage();
 		}
 		
@@ -83,12 +88,14 @@ public class HttpThreadManager extends Thread{
 		//Comprobamos el método
 		if( HttpMethod.isMethod(reqline[0]) == null) {
 			if(VERBOSE) System.out.println("\t\tMethod Not Allowed");
+			isOpen = false;
 			return new HTTPResponse405().getMessage();
 		}
 		
 		//Comprobamos la version
 		if(!HTTPMessage.isVersion(reqline[2])) {
 			if(VERBOSE) System.out.println("\t\tVersion not supported");
+			isOpen = false;
 			return new HTTPResponse505().getMessage();
 		}
 		
@@ -101,18 +108,44 @@ public class HttpThreadManager extends Thread{
 		
 		//Procesamos según el comando 
 		if(! url.equals("/index.html")) {
-			try {
-				String server = url.split("/")[1].split("?")[0];
-				String command = url.split("=")[1];
+			ControlMessage c = ControlMessageType.getTypeURL(url);
+			switch(c.getCommand()) {
+			case SET_TIME_REFRESH:
+				creator.sendSetRefreshMessage(c);
+				break;
+			
+			case DISABLE:
+			case ENABLE:
+				creator.sendControlMessage(c);
+				break;
 				
-			}catch(Exception e) {
+			case CONTROL_MODE:
+				creator.sendControlMessage(c);
+				break;
+				
+			case BROADCAST_MODE:
+				creator.sendSetModeMessage(c);
+				break;
+				
+			case SHOW_LAST_ENTRY:
+				showLastEntry = true;
+				break;
+			
+			case INVALID:
+			default:
+				isOpen = false;
 				return new HTTPResponse400().getMessage();
 			}
 		}
 		
 		//Siempre respondemos con el fichero index, sin importar el comando que ejecute
 		HTTPResponse200 index = new HTTPResponse200();
-		String html = new IndexHTML().getHTML();
+		IndexHTML file = new IndexHTML();
+		if(showLastEntry) {
+			file.addEntry(creator.getLastEntry());
+			showLastEntry = false;
+		}
+		String html = file.getHTML();
 		index.setContentLenght(html.length());
 		index.setCuerpo(html);
 		return index.getMessage();
@@ -171,9 +204,9 @@ public class HttpThreadManager extends Thread{
 		}
 	}
 	
-	private synchronized void sendMessage(String url) {
+	private synchronized void sendMessage(String m) {
 		try {
-			ostream.write(url);
+			ostream.write(m);
 			ostream.newLine();
 			ostream.flush();
 		} catch (IOException e) {

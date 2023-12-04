@@ -8,8 +8,8 @@ public class HTTPResponseError extends HTTPResponseMessage{
 	
 	//Funcionalidad
 	public String getMessage() {
-		return VERSION+SPACE+code+SPACE+phrase+RETCAR+RETCAR+
-		"<!DOCTYPE html>\n"
+		return VERSION+SPACE+code+SPACE+phrase+RETCAR+RETCAR
+		+ "<!DOCTYPE html>\n"
 		+ "<html lang=\"en\">\n"
 		+ "<body>\n"
 		+ "    <div class=\"container\">\n"

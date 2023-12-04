@@ -3,10 +3,10 @@ package messages;
 public enum ControlMessageType {
 	//Enumerado
 	SET_TIME_REFRESH, GET_STATISTICS, INVALID, ACK, NACK, HELP, VERBOSE, NOT_VERBOSE,
-	CONTROL_MODE, BROADCAST_MODE, CHANGE_UNIT, DISABLE, ENABLE;
+	CONTROL_MODE, BROADCAST_MODE, CHANGE_UNIT, DISABLE, ENABLE, SHOW_LAST_ENTRY;
 
 	//Funcionalidad
-	public static ControlMessage getType(String message) {
+	public static ControlMessage getTypeCommandLine(String message) {
 		String line[] = message.split(" ");
 		ControlMessage m; 
 		int p, v;
@@ -78,8 +78,48 @@ public enum ControlMessageType {
 				p = Integer.valueOf(line[1]);
 				return new ControlMessage(ENABLE, p);
 				
+			case "showlastentry":
+				return new ControlMessage(SHOW_LAST_ENTRY);
+				
 			default:
 				return new ControlMessage(INVALID);
+		}
+	}
+	
+	public static ControlMessage getTypeURL(String s) {
+		int v;
+		String m;
+		
+		try {
+			int idServer = Integer.valueOf(s.split("/")[1].split("\\?")[0]);
+			String command = s.split("\\?")[1].split("=")[0];
+			
+			switch(command) {
+			case "disable":
+				return new ControlMessage(DISABLE, idServer);
+			
+			case "enable":
+				return new ControlMessage(ENABLE, idServer);
+			
+			case "setrefresh":
+				v = Integer.valueOf(s.split("=")[1]);
+				return new SetRefreshMessage(SET_TIME_REFRESH, idServer, v);
+				
+			case "controlmode":
+				m = s.split("=")[1];
+				return new SetModeMessage(CONTROL_MODE, m);
+				
+			case "broadcastmode":
+				m = s.split("=")[1];
+				return new SetModeMessage(BROADCAST_MODE, idServer, m);
+				
+			case "showlastentry":
+				return new ControlMessage(SHOW_LAST_ENTRY);
+			default:
+				return new ControlMessage(INVALID);
+			}
+		}catch(Exception e) {
+			return new ControlMessage(INVALID);
 		}
 	}
 	

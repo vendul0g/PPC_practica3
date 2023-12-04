@@ -22,6 +22,7 @@ public class Cliente {
 	private ListenerThread l;
 	private ControlThreadClient c;
 	private HttpServer s;
+	private BroadcastMessage lastEntry;
 	
 	//Constructor
 	public Cliente() {
@@ -47,7 +48,10 @@ public class Cliente {
 	public InetAddress getAddress(int port) {
 	    return this.portServerMapper.get(port);
 	}
-
+	
+	public String getLastEntry() {
+		return this.lastEntry == null ? "" : this.lastEntry.toString();
+	}
 	
 	public String getServersRunning() {
 	    if(portServerMapper.isEmpty()) 
@@ -72,6 +76,7 @@ public class Cliente {
 	}
 	
 	public void addEntry(BroadcastMessage bm) {
+		this.lastEntry = bm;
 		this.e.addEntry(bm);
 	}
 	
