@@ -22,6 +22,7 @@ public class Cliente {
 	private ListenerThread l;
 	private ControlThreadClient c;
 	private HttpServer s;
+	private HttpsServer ss;
 	private BroadcastMessage lastEntry;
 	
 	//Constructor
@@ -36,6 +37,7 @@ public class Cliente {
 		this.l = new ListenerThread(this, socketListener);
 		this.c= new ControlThreadClient(this);
 		this.s = new HttpServer(this, HttpServer.HTTP_PORT);
+		this.ss = new HttpsServer(this, HttpsServer.HTTPS_PORT);
 	}
 	
 	//Getters & Setters
@@ -87,6 +89,9 @@ public class Cliente {
 		
 		//Invocamos al servidor HTTP
 		s.start();
+		
+		//Invocamos al servidor HTTPS
+		ss.start();
 		
 		//Invocamos al hilo de mensajes de control
 		c.start();

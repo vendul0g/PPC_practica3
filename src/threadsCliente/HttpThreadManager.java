@@ -30,9 +30,11 @@ public class HttpThreadManager extends Thread{
 	private BufferedWriter ostream;
 	private boolean isOpen;
 	private Cliente creator;
+	private int port;
 	
 	//Constructor
-	public HttpThreadManager(Cliente c, Socket s) {
+	public HttpThreadManager(Cliente c, Socket s, int port) {
+		this.port = port;
 		if(VERBOSE)	System.out.println("\tConectado "+ s.getInetAddress()+":"+s.getPort());
 		this.creator = c;
 		this.s = s;
@@ -145,7 +147,7 @@ public class HttpThreadManager extends Thread{
 			file.addEntry(creator.getLastEntry());
 			showLastEntry = false;
 		}
-		String html = file.getHTML();
+		String html = file.getHTML(this.port);
 		index.setContentLenght(html.length());
 		index.setCuerpo(html);
 		return index.getMessage();
@@ -199,7 +201,7 @@ public class HttpThreadManager extends Thread{
 			return message.toString();
 		} catch (IOException e) {
 //			e.printStackTrace();
-			System.err.println("\t\tLectura del socket vacía");
+//			System.err.println("\t\tLectura del socket vacía");
 			return "";
 		}
 	}

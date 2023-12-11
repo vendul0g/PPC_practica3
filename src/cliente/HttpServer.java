@@ -10,12 +10,14 @@ public class HttpServer extends Thread{
 	public static final int HTTP_PORT = 8080;
 
 	//Atributos
-	ServerSocket s;
-	Socket cliente; 
-	Cliente creator;
+	private ServerSocket s;
+	private Socket cliente; 
+	private Cliente creator;
+	private int port;
 	
 	//Constructor
 	public HttpServer(Cliente c, int port) {
+		this.port = port;
 		this.creator = c;
 		try {
 			s = new ServerSocket(port);
@@ -35,18 +37,11 @@ public class HttpServer extends Thread{
 		while(true) {
 			try {
 				cliente = s.accept();
-				new HttpThreadManager(creator, cliente).start();
+				new HttpThreadManager(creator, cliente, port).start();
 			}catch(IOException e) {
 				System.err.println("Error en la creación del hilo");
 			}
 		}
 	}
-	
-	//Main
-//	public static void main(String[] args) {
-//        //Servidor HTTP
-//        HttpServer httpServer = new HttpServer(HttpServer.HTTP_PORT);
-//		httpServer.run();
-//    }
 }
 
