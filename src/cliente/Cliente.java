@@ -19,11 +19,12 @@ public class Cliente {
 	private Map<Integer, InetAddress> portServerMapper;
 	private boolean verbose;
 	private Estadistico e;
+	private BroadcastMessage lastEntry;
 	private ListenerThread l;
 	private ControlThreadClient c;
 	private HttpServer s;
 	private HttpsServer ss;
-	private BroadcastMessage lastEntry;
+//	private MailThread mt;
 	
 	//Constructor
 	public Cliente() {

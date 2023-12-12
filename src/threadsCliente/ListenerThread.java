@@ -40,10 +40,11 @@ public class ListenerThread extends Thread{
 			//Anotamos el puerto de envío
 			creator.addServer(packet.getPort(), packet.getAddress());
 			
-			//Mandamos a procesar el mensaje 
+			//Mandamos a procesar el mensaje y lo alamacenamos  
 			BroadcastMessage bm = new BroadcastMessage().deserialize(msg);
 			if(bm != null) {
 				if(creator.isVerbose()) System.out.println(bm.toString());
+				//Añadimos el mensaje al creador 
 				this.creator.addEntry(bm);
 			}
 		}
