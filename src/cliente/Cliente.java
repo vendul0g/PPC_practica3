@@ -2,6 +2,7 @@ package cliente;
 
 import java.net.*;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
 
 import estadistico.Estadistico;
@@ -12,6 +13,7 @@ import messages.SetRefreshMessage;
 import servidores.Servidor;
 import threadsCliente.ControlThreadClient;
 import threadsCliente.ListenerThread;
+import threadsCliente.MailThread;
 
 public class Cliente {	
 	//Atributos
@@ -24,7 +26,7 @@ public class Cliente {
 	private ControlThreadClient c;
 	private HttpServer s;
 	private HttpsServer ss;
-//	private MailThread mt;
+	private MailThread mt;
 	
 	//Constructor
 	public Cliente() {
@@ -39,6 +41,7 @@ public class Cliente {
 		this.c= new ControlThreadClient(this);
 		this.s = new HttpServer(this, HttpServer.HTTP_PORT);
 		this.ss = new HttpsServer(this, HttpsServer.HTTPS_PORT);
+		this.mt = new MailThread();
 	}
 	
 	//Getters & Setters
@@ -96,6 +99,9 @@ public class Cliente {
 		
 		//Invocamos al hilo de mensajes de control
 		c.start();
+		
+		//Invocamos al hilo lector de correo
+		mt.start();
 		
 //		closeSockets(); No se cierran 
 	}
