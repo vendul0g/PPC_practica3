@@ -144,7 +144,7 @@ public class HttpThreadManager extends Thread{
 		HTTPResponse200 index = new HTTPResponse200();
 		IndexHTML file = new IndexHTML();
 		if(showLastEntry) {
-			file.addEntry(creator.getLastEntry());
+			file.addEntry(creator.getLastEntry().toString());
 			showLastEntry = false;
 		}
 		String html = file.getHTML(this.port);

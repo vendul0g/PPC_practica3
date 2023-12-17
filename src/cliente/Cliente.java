@@ -2,14 +2,11 @@ package cliente;
 
 import java.net.*;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.TreeMap;
 
 import estadistico.Estadistico;
 import messages.BroadcastMessage;
 import messages.ControlMessage;
-import messages.SetModeMessage;
-import messages.SetRefreshMessage;
 import servidores.Servidor;
 import threadsCliente.ControlThreadClient;
 import threadsCliente.ListenerThread;
@@ -41,7 +38,7 @@ public class Cliente {
 		this.c= new ControlThreadClient(this);
 		this.s = new HttpServer(this, HttpServer.HTTP_PORT);
 		this.ss = new HttpsServer(this, HttpsServer.HTTPS_PORT);
-		this.mt = new MailThread();
+		this.mt = new MailThread(this);
 	}
 	
 	//Getters & Setters
@@ -55,8 +52,8 @@ public class Cliente {
 	    return this.portServerMapper.get(port);
 	}
 	
-	public String getLastEntry() {
-		return this.lastEntry == null ? "" : this.lastEntry.toString();
+	public BroadcastMessage getLastEntry() {
+		return this.lastEntry;
 	}
 	
 	public String getServersRunning() {
@@ -84,6 +81,10 @@ public class Cliente {
 	public void addEntry(BroadcastMessage bm) {
 		this.lastEntry = bm;
 		this.e.addEntry(bm);
+	}
+	
+	public void printPrompt() {
+		this.c.printPrompt();
 	}
 	
 	//Funcionalidad

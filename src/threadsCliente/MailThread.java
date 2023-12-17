@@ -5,6 +5,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import cliente.Cliente;
+import messages.BroadcastMessage;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -17,159 +18,132 @@ public class MailThread extends Thread{
 	private static final String HOST_POP = "pop.gmail.com";
 	private static final String HOST_SMTP = "smtp.gmail.com";
     private static final String POP_TYPE = "pop3s";
+    private static final String SMTP_TYPE = "smtp";
     private static final String CREDENTIALS_FILE = "/resources/MailThreadResources.txt";
     
     // Atributos
     private Cliente creator;
-    private Timer timer = new Timer();
     private Properties popProps;
     private Properties smtpProps;
-    private Store store;
+//    private Store store;
     private String user;
     private String pass;
     
     // Constructor
-    public MailThread() {
+    public MailThread(Cliente c) {
+    	this.creator = c;
+    	
+    	//Cargamos los credenciales de acceso al correo
         loadCredentials();
+        
+        //Cargamos las propiedades de POP
+        this.popProps = new Properties();
+    	popProps.put("mail.pop3.host", "pop.gmail.com");
+    	popProps.put("mail.pop3.port", "995");
+    	popProps.put("mail.pop3.starttls.enable", "true");
+    	
+    	//Cargamos las propiedades de SMTP
+    	this.smtpProps = new Properties();
+    	smtpProps.put("mail.smtp.auth", "true");
+    	smtpProps.put("mail.smtp.starttls.enable", "true");
+    	smtpProps.put("mail.smtp.host", "smtp.gmail.com");
+    	smtpProps.put("mail.smtp.port", "587");
     }
     
     // Funcionalidad
-    public void sendEmail() {
-    	System.out.println("Envío mensaje de vuelta");
-//    	smtpProps = new Properties();
-//        
-//        // Añadimos las propiedades de SMTP
-//        smtpProps.put("mail.smtp.host", HOST_SMTP);
-//        smtpProps.put("mail.smtp.port", "587");
-//        smtpProps.put("mail.smtp.auth", "true");
-//        smtpProps.put("mail.smtp.starttls.enable", "true");
-//        
-//        Session session = Session.getInstance(smtpProps, new Authenticator() {
-//            protected PasswordAuthentication getPasswordAuthentication() {
-//                return new PasswordAuthentication(USERNAME, pass);
-//            }
-//        });
-//        
-//        MimeMessage message = new MimeMessage(session);
-//        message.setFrom(new InternetAddress(from));
-//        message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-//        message.setSubject(subject);
-//        message.setText(body);
-//
-//        Transport.send(message);
-    }
-    
-    public void checkINBOX() throws MessagingException{
-    	Folder emailFolder = null;
-        Store store = null;
-        try {
-            //create properties field
-            Properties properties = new Properties();
-
-            properties.put("mail.pop3.host", "pop.gmail.com");
-            properties.put("mail.pop3.port", Integer.toString(995));
-            properties.put("mail.pop3.starttls.enable", "true");
-
-            Session emailSession = Session.getDefaultInstance(properties);
-
-            //create the POP3 store object and connect with the pop server
-
-            store = emailSession.getStore("pop3s");
-
-            store.connect("pop.gmail.com", "ruserchat@gmail.com", "!Ch@tGPT");
-
-            //create the folder object and open it
-
-            emailFolder = store.getFolder("INBOX");
-            emailFolder.open(Folder.READ_ONLY);
-
-            // retrieve the messages from the folder in an array and print it
-            Message foundMessage = null;
-            Message[] messages = emailFolder.getMessages();
-            for (final Message msg : messages) {
-                final String subject = msg.getSubject();
-            }
-        }
-        finally {
-            if (emailFolder != null) {
-                emailFolder.close(false);
-            }
-            if (store != null) {
-                store.close();
-            }
-        }
-/* Prueba 2 fallida
-    	popProps = new Properties();
+    public void sendEmail(Message m, String resp) throws MessagingException {
+    	Session session = Session.getInstance(this.smtpProps, new javax.mail.Authenticator() {
+    	    protected PasswordAuthentication getPasswordAuthentication() {
+    	        return new PasswordAuthentication(user, pass);
+    	    }
+    	});
     	
-    	//Añadimos las propiedades de POP3
-    	popProps.put("mail.pop3.host", HOST_POP);
-        popProps.put("mail.pop3.port", "995");
-//        popProps.put("mail.pop3.ssl.trust", "*");
-        popProps.put("mail.pop3.ssl.enable", "true");
-*/
-//    	Session emailSession = Session.getDefaultInstance(popProps);
-/* Prueba número 2
-        Session session = Session.getInstance(popProps, new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(user, pass);
-            }
-        });
-        
-        try {
-            Store store = session.getStore("pop3s");
-            store.connect();
-
-            Folder inbox = store.getFolder("INBOX");
-            inbox.open(Folder.READ_ONLY);
-
-            int messageCount = inbox.getMessageCount();
-            System.out.println("Total number of emails in the inbox: " + messageCount);
-
-            inbox.close();
-            store.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-*/        
-//        try {
-//        	this.store = emailSession.getStore(POP_TYPE);
-//			store.connect(HOST_POP, this.user, this.pass);
-//			
-//			Folder emailFolder = store.getFolder("INBOX");
-//			emailFolder.open(Folder.READ_ONLY); // TODO cambiar para eliminar cosas de la bandeja
-//			
-//			Message[] messages = emailFolder.getMessages();
-//			
-//			for (Message m : messages) {
-//				// Comprobamos si el mensaje debe ser respondido
-//				//TODO comprobación
-//				// Respondemos
-//			}
-//			
-//			emailFolder.close();
-//			store.close();
-//			
-//		} catch (MessagingException e) {
-//			e.printStackTrace();
-//			System.err.println("Error conectando con el servidor POP3");
-//		}
+    	Message replyMessage = new MimeMessage(session);
+    	replyMessage = (MimeMessage) m.reply(false);
+    	replyMessage.setFrom(new InternetAddress(this.user));
+    	replyMessage.setText(resp);
+    	replyMessage.setReplyTo(m.getReplyTo());
+    	
+    	Transport transport = session.getTransport(SMTP_TYPE);
+    	transport.connect(HOST_SMTP, this.user, this.pass);
+    	transport.sendMessage(replyMessage, replyMessage.getAllRecipients());
+    	transport.close();
     }
     
+    private String createResponse(BroadcastMessage m) {
+    	return "Serializado:\n"
+    			+ m.serializeJSON()+"\n"
+				+ "---------------\n"
+				+ "Deserializado:\n"
+				+ m;
+    }
+    
+    private void processInbox(Message[] messages) throws MessagingException{
+    	//Procesamos los mensajes que tengamos
+    	for(Message m : messages) {
+    		//Vemos quien lo envía
+    		Address[] fromAddresses = m.getFrom();
+    		String senderEmail = fromAddresses.length > 0 ? ((InternetAddress) fromAddresses[0]).getAddress() : null;
+    		System.out.println("- "+senderEmail+": "+m.getSubject());
+    		
+    		//Vemos cual es la petición del mensaje
+    		switch(m.getSubject()) {
+    		case "/lastentry":
+    			//Procesamos petición
+    			BroadcastMessage lastEntry = creator.getLastEntry();
+    			//Respondemos
+    			sendEmail(m, createResponse(lastEntry));
+    			break;
+    		}
+
+    		//Eliminamos el mensaje
+    		m.setFlag(Flags.Flag.DELETED, true);
+    	}
+    	
+    	//Volvemos a mostrar el prompt 
+    	creator.printPrompt();
+    }
+    
+    public void checkInbox() {
+    	//Abrimos sesión
+    	Session emailSession = Session.getDefaultInstance(popProps);
+    	
+    	try {
+    		Store store = emailSession.getStore(POP_TYPE);
+    		
+    		//Conectamos
+    		store.connect(HOST_POP, this.user, this.pass);
+    		
+    		//Descargamos los correos
+    		Folder emailFolder = store.getFolder("INBOX");
+    		emailFolder.open(Folder.READ_WRITE);
+    		
+    		//Procesamos los mensajes si existen
+    		if (emailFolder.getUnreadMessageCount() > 0) {
+    			System.out.println("\r[¡Alerta!]: Mensajes nuevos");
+    			processInbox(emailFolder.getMessages());
+    		}
+    		
+    		//Cerramos todo 
+    		emailFolder.close(true);
+    		store.close();
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	}
+	}
+
     public void run() {
-    	// Repasamos la bandeja de entrada para responder los correos necesarios
-    	try {
-			checkINBOX();
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-    	// Esperamos 30 segundos
-    	try {
-			Thread.sleep(30000);
-		} catch (InterruptedException e) {
-			
-		}
+    	while(true) {
+	    	// Repasamos la bandeja de entrada para responder los correos necesarios
+	    	checkInbox();
+	    	
+	    	// Esperamos 30 segundos
+	    	try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				
+			}
+    	}
     }
     
     private void loadCredentials() {
