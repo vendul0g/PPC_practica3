@@ -13,4 +13,18 @@ public class JSONParser {
         return gson.fromJson(json.substring(1, json.length()), clazz);
     }
     
+    public static String badRequest() {
+		return "{\n"
+				+ "  \"status\": 400,\n"
+				+ "  \"error\": \"Bad Request\"\n"
+				+ "}\n";
+	}
+	
+	public static String ok200() {
+		return "{\n"
+				+ "  \"status\": 200,\n"
+				+ "  \"message\": \"OK.\""
+				+ "}\n";
+	}
+    
 }

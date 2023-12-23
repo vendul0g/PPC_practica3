@@ -4,6 +4,8 @@ import java.net.*;
 import java.util.Scanner;
 import cliente.Cliente;
 import messages.*;
+import serializacion.JSONParser;
+
 import java.io.*;
 
 public class ControlThreadClient extends Thread{
@@ -34,6 +36,126 @@ public class ControlThreadClient extends Thread{
 	}
 	
 	//Funcionalidad
+	public void processCommand(ControlMessage c) {
+		//Comprobamos si el comando es inválido
+		if(c.getCommand() == ControlMessageType.INVALID) {
+			System.out.println("Comando incorrecto");
+			printHelp();
+			return;
+		}
+		
+		//Controlamos si es un comando de ayuda
+		if(c.getCommand() == ControlMessageType.HELP) {
+			printHelp();
+			return;
+		}
+		
+		//Controlamos si se quiere cambiar el modo verbose
+		if(c.getCommand() == ControlMessageType.VERBOSE) {
+			this.creator.setVerbose(true);
+			return;
+		}
+		
+		//Controlamos si se quiere cambiar el modo verbose
+		if(c.getCommand() == ControlMessageType.NOT_VERBOSE) {
+			this.creator.setVerbose(false);
+			return;
+		}
+		
+		//Comprobamos si se quiere cambiar el modo de serialización de los mensajes de control
+		if(c.getCommand() == ControlMessageType.CONTROL_MODE) {
+			this.serializationMode = ((SetModeMessage) c).getMode();	
+			return;
+		}
+		
+		//Si se quiere ver la estadística
+		if(c.getCommand() == ControlMessageType.GET_STATISTICS) {
+			System.out.println(this.creator.getStatistic());
+			return;
+		}
+		
+		//Si se quiere mostrar el último envío
+		if(c.getCommand() == ControlMessageType.SHOW_LAST_ENTRY) {
+			System.out.println("| Última entrada\n·--> "+creator.getLastEntry());
+			return;
+		}
+			
+		//Caso de mensajes con envío 
+		if(!checkAddress(c)) {
+			return;
+		}
+		//Se quiere cambiar el tiempo de refresco
+		if( c.getCommand() == ControlMessageType.SET_TIME_REFRESH) {
+			sendSetRefreshMessage(c);
+			return;
+		}
+		
+		//Comprobamos si se quiere cambiar el modo de serialización de los mensajes broadcast
+		else if( c.getCommand() == ControlMessageType.BROADCAST_MODE) {
+			sendSetModeMessage(c);		
+			return;
+		}
+		
+		//Comprobamos si se quiere cambiar la unidad de medida
+		else if( c.getCommand() == ControlMessageType.CHANGE_UNIT) {
+			sendChangeUnitMessage(c);
+			return;
+		}
+		
+		//Comprobamos si se quiere habilitar/deshabilitar el envio de datos de un servidor
+		else if( c.getCommand() == ControlMessageType.DISABLE
+				|| c.getCommand() == ControlMessageType.ENABLE) {
+			sendControlMessage(c);
+			return;
+		}
+		
+		System.out.println("Error: comando inválido");
+		printHelp();
+	}
+	
+	public String processCommandAPI(ControlMessage c){
+		//Comprobamos si se quiere cambiar el modo de serialización de los mensajes de control
+		if(c.getCommand() == ControlMessageType.CONTROL_MODE) {
+			this.serializationMode = ((SetModeMessage) c).getMode();	
+			return JSONParser.ok200();
+		}
+		
+		//Si se quiere mostrar el último envío
+		if(c.getCommand() == ControlMessageType.SHOW_LAST_ENTRY) {
+			return JSONParser.serialize(this.creator.getLastEntry());
+		}
+			
+		//Caso de mensajes con envío 
+		if(!checkAddress(c)) {
+			return JSONParser.badRequest();
+		}
+		//Se quiere cambiar el tiempo de refresco
+		if( c.getCommand() == ControlMessageType.SET_TIME_REFRESH) {
+			sendSetRefreshMessage(c);
+			return JSONParser.ok200();
+		}
+		
+		//Comprobamos si se quiere cambiar el modo de serialización de los mensajes broadcast
+		else if( c.getCommand() == ControlMessageType.BROADCAST_MODE) {
+			sendSetModeMessage(c);		
+			return JSONParser.ok200();
+		}
+		
+		//Comprobamos si se quiere cambiar la unidad de medida
+		else if( c.getCommand() == ControlMessageType.CHANGE_UNIT) {
+			sendChangeUnitMessage(c);
+			return JSONParser.ok200();
+		}
+		
+		//Comprobamos si se quiere habilitar/deshabilitar el envio de datos de un servidor
+		else if( c.getCommand() == ControlMessageType.DISABLE
+				|| c.getCommand() == ControlMessageType.ENABLE) {
+			sendControlMessage(c);
+			return JSONParser.ok200();
+		}
+		return JSONParser.badRequest();
+	}
+	
 	public void run() {
 		String inst;
 		
@@ -45,81 +167,7 @@ public class ControlThreadClient extends Thread{
 			
 			//Procesamos lo que quiere el usuario
 			ControlMessage c = ControlMessageType.getTypeCommandLine(inst);
-			
-			//Comprobamos si el comando es inválido
-			if(c.getCommand() == ControlMessageType.INVALID) {
-				System.out.println("Comando incorrecto");
-				printHelp();
-				continue;
-			}
-			
-			//Controlamos si es un comando de ayuda
-			if(c.getCommand() == ControlMessageType.HELP) {
-				printHelp();
-				continue;
-			}
-			
-			//Controlamos si se quiere cambiar el modo verbose
-			if(c.getCommand() == ControlMessageType.VERBOSE) {
-				this.creator.setVerbose(true);
-				continue;
-			}
-			
-			//Controlamos si se quiere cambiar el modo verbose
-			if(c.getCommand() == ControlMessageType.NOT_VERBOSE) {
-				this.creator.setVerbose(false);
-				continue;
-			}
-			
-			//Comprobamos si se quiere cambiar el modo de serialización de los mensajes de control
-			if(c.getCommand() == ControlMessageType.CONTROL_MODE) {
-				this.serializationMode = ((SetModeMessage) c).getMode();	
-				continue;
-			}
-			
-			//Si se quiere ver la estadística
-			if(c.getCommand() == ControlMessageType.GET_STATISTICS) {
-				System.out.println(this.creator.getStatistic());
-				continue;
-			}
-			
-			//Si se quiere mostrar el último envío
-			if(c.getCommand() == ControlMessageType.SHOW_LAST_ENTRY) {
-				System.out.println("| Última entrada\n·--> "+creator.getLastEntry());
-				continue;
-			}
-				
-			//Caso de mensajes con envío 
-			if(!checkAddress(c)) {
-				continue;
-			}
-			//Se quiere cambiar el tiempo de refresco
-			if( c.getCommand() == ControlMessageType.SET_TIME_REFRESH) {
-				sendSetRefreshMessage(c);
-				continue;
-			}
-			
-			//Comprobamos si se quiere cambiar el modo de serialización de los mensajes broadcast
-			else if( c.getCommand() == ControlMessageType.BROADCAST_MODE) {
-				sendSetModeMessage(c);		
-				continue;
-			}
-			
-			//Comprobamos si se quiere cambiar la unidad de medida
-			else if( c.getCommand() == ControlMessageType.CHANGE_UNIT) {
-				sendChangeUnitMessage(c);
-				continue;
-			}
-			
-			//Comprobamos si se quiere habilitar/deshabilitar el envio de datos de un servidor
-			else if( c.getCommand() == ControlMessageType.DISABLE
-					|| c.getCommand() == ControlMessageType.ENABLE) {
-				sendControlMessage(c);
-				continue;
-			}
-			
-			System.out.println("Error: comando inválido");
-			printHelp();			
+			processCommand(c);
 		}
 		//Cerramos el socket
 //		closeSocket(socket);

@@ -18,7 +18,7 @@ Tendremos un cliente de los servidores que a su vez ofrece
 .                                    ·----------·           |     |   ·----·
 .                  Firefox ----->    | API REST |  CLIENTE  |-----·---| S2 |
 .                                    ·----------·           |     |   ·----·
-. Cliente correo ---> GMAIL ---->    |   SMTP   |           |     ·---| S3 |
+.                   GMAIL  <---->    | POP/SMTP |           |     ·---| S3 |
 .                                    ·----------·-----------·         ·----·
 ```
 
@@ -78,8 +78,25 @@ Es decir. Tenemos que habilitar un "comando" para mostrar el último registro de
 ## API
 Lo mismo que teníamos hasta ahora con los enlaces pero en formato de api 
 ```
-http://loclhost/apirest/camia_freq?servidor=1&valor=500
+http://loclhost/apirest/cambia_freq?servidor=1&valor=500
 ```
  <span style="color: yellow;">Nos devuelve un JSON</span>.
 
 Tiene que ser capaz de realizar toda la funcionalidad que podría hacer un cliente por consola
+
+# Usage
+```
+USAGE: <command> [id_server] [options]
+ setrefresh <id_server> <time> : Establece el tiempo de refresco de un servidor
+ controlmode <xml/json> : Establece el tipo de serialización para los mensajes de control
+ broadcastmode <id_server> <xml/json> : Establece el tipo de serialización para los mensajes broadcast
+ changeunit <id_server> <celsius/farenheit> : Cambia la unidad de temperatura
+ disable <id_server> : Deshabilita el envío de datos del servidor con id_server
+ enable <id_server> : Habilita el envío de datos del servidor con id_server
+ statistic : Muestra las estadísticas de valores ofrecidas por los servidores
+ verbose : Muestra los mensajes que van enviando los servidores
+ notverbose : Deja de mostrar los mensajes que van enviando los servidores
+ showlastentry: Muestra la última entrada recibida por los servidores
+ help : Muestra este mensaje
+```
+

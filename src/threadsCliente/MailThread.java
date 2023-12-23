@@ -2,10 +2,13 @@ package threadsCliente;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import cliente.Cliente;
 import messages.BroadcastMessage;
+import serializacion.JSONParser;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -38,7 +41,7 @@ public class MailThread extends Thread{
         
         //Cargamos las propiedades de POP
         this.popProps = new Properties();
-    	popProps.put("mail.pop3.host", "pop.gmail.com");
+    	popProps.put("mail.pop3.host", HOST_POP);
     	popProps.put("mail.pop3.port", "995");
     	popProps.put("mail.pop3.starttls.enable", "true");
     	
@@ -46,36 +49,44 @@ public class MailThread extends Thread{
     	this.smtpProps = new Properties();
     	smtpProps.put("mail.smtp.auth", "true");
     	smtpProps.put("mail.smtp.starttls.enable", "true");
-    	smtpProps.put("mail.smtp.host", "smtp.gmail.com");
+    	smtpProps.put("mail.smtp.host", HOST_SMTP);
     	smtpProps.put("mail.smtp.port", "587");
     }
     
     // Funcionalidad
-    public void sendEmail(Message m, String resp) throws MessagingException {
-    	Session session = Session.getInstance(this.smtpProps, new javax.mail.Authenticator() {
-    	    protected PasswordAuthentication getPasswordAuthentication() {
-    	        return new PasswordAuthentication(user, pass);
-    	    }
-    	});
-    	
-    	Message replyMessage = new MimeMessage(session);
-    	replyMessage = (MimeMessage) m.reply(false);
-    	replyMessage.setFrom(new InternetAddress(this.user));
-    	replyMessage.setText(resp);
-    	replyMessage.setReplyTo(m.getReplyTo());
-    	
-    	Transport transport = session.getTransport(SMTP_TYPE);
-    	transport.connect(HOST_SMTP, this.user, this.pass);
-    	transport.sendMessage(replyMessage, replyMessage.getAllRecipients());
-    	transport.close();
-    }
-    
-    private String createResponse(BroadcastMessage m) {
-    	return "Serializado:\n"
-    			+ m.serializeJSON()+"\n"
-				+ "---------------\n"
-				+ "Deserializado:\n"
-				+ m;
+    public void sendEmail(Message m, String serializado, String deserializado) throws MessagingException {
+        Session session = Session.getInstance(this.smtpProps, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(user, pass);
+            }
+        });
+
+        MimeMessage replyMessage = new MimeMessage(session);
+        replyMessage = (MimeMessage) m.reply(false);
+        replyMessage.setFrom(new InternetAddress(this.user));
+
+        // Create a multipart message
+        Multipart multipart = new MimeMultipart();
+
+        // Create the first part with p1
+        MimeBodyPart part1 = new MimeBodyPart();
+        part1.setText("Serializado:\n"+serializado);
+        multipart.addBodyPart(part1);
+
+        // Create the second part with p2
+        MimeBodyPart part2 = new MimeBodyPart();
+        part2.setText("\nDeserializado:\n"+deserializado);
+        multipart.addBodyPart(part2);
+
+        // Set the complete multipart as the message content
+        replyMessage.setContent(multipart);
+        
+        replyMessage.setReplyTo(m.getReplyTo());
+
+        Transport transport = session.getTransport(SMTP_TYPE);
+        transport.connect(HOST_SMTP, this.user, this.pass);
+        transport.sendMessage(replyMessage, replyMessage.getAllRecipients());
+        transport.close();
     }
     
     private void processInbox(Message[] messages) throws MessagingException{
@@ -92,7 +103,7 @@ public class MailThread extends Thread{
     			//Procesamos petición
     			BroadcastMessage lastEntry = creator.getLastEntry();
     			//Respondemos
-    			sendEmail(m, createResponse(lastEntry));
+    			sendEmail(m, JSONParser.serialize(lastEntry), lastEntry.toString());
     			break;
     		}
 
@@ -139,7 +150,7 @@ public class MailThread extends Thread{
 	    	
 	    	// Esperamos 30 segundos
 	    	try {
-				Thread.sleep(30000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				
 			}

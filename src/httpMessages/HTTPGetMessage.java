@@ -1,8 +1,5 @@
 package httpMessages;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 public class HTTPGetMessage extends HTTPRequestMessage{
 	//Variables globales
 	private static final String METHOD = "GET";

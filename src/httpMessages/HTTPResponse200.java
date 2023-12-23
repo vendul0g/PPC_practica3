@@ -11,7 +11,9 @@ public class HTTPResponse200 extends HTTPResponseMessage{
 	private static final int CODE = 200;
 	private static final String PHRASE = "OK";
 	private static final String SERVER = "Server: JavaServer/2.0";
-	private static final String CONTENT_TYPE = "Content-type: text/html";
+	private static final String CONTENT_TYPE = "Content-type: ";
+	public static final String TYPE_HTML = "text/html";
+	public static final String TYPE_JSON = "application/json";
 	private static final String DATE = "Date: ";
 	private static final String SET_COOKIE = "Set-Cookie: ";
 	private static final String MAX_AGE = "max-age=3600";
@@ -24,10 +26,12 @@ public class HTTPResponse200 extends HTTPResponseMessage{
 	private List<String>cookies;
 	private int contentLength;
 	private String cuerpo;
+	private String type;
 	
 	//Constructor
-	public HTTPResponse200() {
+	public HTTPResponse200(String type) {
 		super(CODE, PHRASE);
+		this.type = type;
 		this.fecha = LocalDateTime.now();
 		this.cookies = new LinkedList<String>();
 		this.contentLength = 0;
@@ -60,7 +64,7 @@ public class HTTPResponse200 extends HTTPResponseMessage{
 				response += SET_COOKIE+c+"; "+MAX_AGE+RETCAR;
 			}
 		}
-		response += CONTENT_TYPE+RETCAR;			
+		response += CONTENT_TYPE+type+RETCAR;			
 		if (contentLength > 0) {
 			response += CONTENT_LENGTH+contentLength+RETCAR;
 		}
@@ -70,5 +74,4 @@ public class HTTPResponse200 extends HTTPResponseMessage{
 		
 		return response;
 	}
-
 }

@@ -10,7 +10,7 @@ import java.io.*;
 
 public class ListenerThread extends Thread{
 	//Constantes
-	private static final String LOGFILE = "/home/alvaro/Documents/PPC/Practica2_PPC/src/estadistico/broadcastLog.txt";
+	private static final String LOGFILE = "/home/alvaro/Documents/PPC/Practica3_PPC/src/estadistico/broadcastLog.txt";
 	
 	//Atributos
 	private Cliente creator;

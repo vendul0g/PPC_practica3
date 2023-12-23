@@ -87,6 +87,10 @@ public class Cliente {
 		this.c.printPrompt();
 	}
 	
+	public Estadistico getEstadistico() {
+		return this.e;
+	}
+	
 	//Funcionalidad
 	public void run() {
 		//Invocamos el hilo de recepción de mensajes broadcast
@@ -121,6 +125,10 @@ public class Cliente {
 	
 	public void sendControlMessage(ControlMessage c) {
 		this.c.sendControlMessage(c);
+	}
+	
+	public String apiMessage(ControlMessage c) {
+		return this.c.processCommandAPI(c);
 	}
 	
 	public void crearSocketListener() {

@@ -2,11 +2,6 @@ package threadsCliente;
 
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,6 +67,24 @@ public class HttpThreadManager extends Thread{
 		//Cerramos el socket
 		closeSocket();
 	}
+		
+	private String apirest(String url) {
+		String command;
+		try {
+			command = url.split("/")[2];
+		} catch(Exception e) {
+			return new HTTPResponseAPI400().getMessage();
+		}
+		ControlMessage c = ControlMessageType.getTypeApiRest(command);
+		if(c.getCommand() == ControlMessageType.INVALID) {
+			return new HTTPResponseAPI400().getMessage();
+		}
+		String cuerpo = creator.apiMessage(c);
+		HTTPResponse200 resp = new HTTPResponse200(HTTPResponse200.TYPE_JSON);
+		resp.setCuerpo(cuerpo);
+		resp.setContentLenght(cuerpo.length());
+		return resp.getMessage();
+	}
 	
 	private String proccesMessage(String m) {
 		boolean showLastEntry = false;
@@ -108,49 +121,55 @@ public class HttpThreadManager extends Thread{
 		String url = getURL(reqline[1]);
 		if(VERBOSE) System.out.println("\t\tPetición correcta (200) --> "+url);
 		
-		//Procesamos según el comando 
-		if(! url.equals("/index.html")) {
-			ControlMessage c = ControlMessageType.getTypeURL(url);
-			switch(c.getCommand()) {
-			case SET_TIME_REFRESH:
-				creator.sendSetRefreshMessage(c);
-				break;
-			
-			case DISABLE:
-			case ENABLE:
-				creator.sendControlMessage(c);
-				break;
+		//Si es la API procesamos
+		if(url.startsWith("/apirest")) {
+			return apirest(url); 
+		}
+		else { //Si no
+			//Procesamos según el comando 
+			if(! url.equals("/index.html")) {
+				ControlMessage c = ControlMessageType.getTypeURL(url);
+				switch(c.getCommand()) {
+				case SET_TIME_REFRESH:
+					creator.sendSetRefreshMessage(c);
+					break;
 				
-			case CONTROL_MODE:
-				creator.sendControlMessage(c);
-				break;
+				case DISABLE:
+				case ENABLE:
+					creator.sendControlMessage(c);
+					break;
+					
+				case CONTROL_MODE:
+					creator.sendControlMessage(c);
+					break;
+					
+				case BROADCAST_MODE:
+					creator.sendSetModeMessage(c);
+					break;
+					
+				case SHOW_LAST_ENTRY:
+					showLastEntry = true;
+					break;
 				
-			case BROADCAST_MODE:
-				creator.sendSetModeMessage(c);
-				break;
-				
-			case SHOW_LAST_ENTRY:
-				showLastEntry = true;
-				break;
-			
-			case INVALID:
-			default:
-				isOpen = false;
-				return new HTTPResponse400().getMessage();
+				case INVALID:
+				default:
+					isOpen = false;
+					return new HTTPResponse400().getMessage();
+				}
 			}
+			
+			//Siempre respondemos con el fichero index, sin importar el comando que ejecute
+			HTTPResponse200 index = new HTTPResponse200(HTTPResponse200.TYPE_HTML);
+			IndexHTML file = new IndexHTML();
+			if(showLastEntry) {
+				file.addEntry(creator.getLastEntry().toString());
+				showLastEntry = false;
+			}
+			String html = file.getHTML(this.port);
+			index.setContentLenght(html.length());
+			index.setCuerpo(html);
+			return index.getMessage();
 		}
-		
-		//Siempre respondemos con el fichero index, sin importar el comando que ejecute
-		HTTPResponse200 index = new HTTPResponse200();
-		IndexHTML file = new IndexHTML();
-		if(showLastEntry) {
-			file.addEntry(creator.getLastEntry().toString());
-			showLastEntry = false;
-		}
-		String html = file.getHTML(this.port);
-		index.setContentLenght(html.length());
-		index.setCuerpo(html);
-		return index.getMessage();
 	}
 	
 	private boolean isConnectionOpen(String[] lines) {
